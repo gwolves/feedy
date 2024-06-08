@@ -1,0 +1,16 @@
+# nix
+flake.nix
+flake.lock
+gomod2nix.toml
+
+# docker
+Dockerfile
+docker-compose.yml
+
+# dev
+justfile
+
+# database
+atlas.hcl
+sqlc.yaml
+database
