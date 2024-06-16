@@ -1,9 +1,7 @@
 package main
 
-import (
-	"fmt"
-)
+import "github.com/gwolves/feedy/cmd"
 
 func main() {
-	fmt.Println("hello world")
+	cmd.MustExecute()
 }

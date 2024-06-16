@@ -24,7 +24,7 @@
       {
         packages.default = pkgs.buildGoApplication {
           pname = "feedy";
-          version = "0.1.0";
+          version = "1.0.0";
           pwd = ./.;
           src = ./.;
           modules = ./gomod2nix.toml;
