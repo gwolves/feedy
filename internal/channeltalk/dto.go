@@ -52,7 +52,7 @@ func (r *refreshIssueTokenRequest) Method() string {
 type IssueTokenResponse struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
-	ExpiresIn    int64  `json:"expiersIn"`
+	ExpiresIn    int64  `json:"expiresIn"`
 
 	Expiry time.Time
 }

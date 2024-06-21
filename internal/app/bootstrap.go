@@ -41,7 +41,7 @@ func initUsecase(cfg *config.Config, logger *slog.Logger) *service.UseCase {
 	}
 
 	repo := adapter.NewPostgresRepo(conn)
-	client := channeltalk.NewClient(cfg.AppSecret)
+	client := channeltalk.NewClient(cfg.AppSecret, logger)
 
 	return service.NewUseCase(cfg.AppName, repo, client, logger)
 }

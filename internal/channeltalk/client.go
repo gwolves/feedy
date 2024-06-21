@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -19,7 +20,7 @@ const (
 	refreshTokenExpiry = 7 * 24 * time.Hour
 )
 
-func NewClient(secret string, opts ...Option) *Client {
+func NewClient(secret string, logger *slog.Logger, opts ...Option) *Client {
 	var config config
 	for _, opt := range opts {
 		opt(&config)
@@ -40,7 +41,8 @@ func NewClient(secret string, opts ...Option) *Client {
 		client: resty.
 			NewWithClient(config.httpClient).
 			SetBaseURL(config.endpoint),
-		cache: cache.New(refreshTokenExpiry, 1*time.Hour),
+		cache:  cache.New(refreshTokenExpiry, 1*time.Hour),
+		logger: logger,
 	}
 }
 
@@ -48,6 +50,7 @@ type Client struct {
 	client *resty.Client
 	secret string
 	cache  *cache.Cache
+	logger *slog.Logger
 }
 
 type Option func(*config)
@@ -141,15 +144,18 @@ func (c *Client) getAccessToken(ctx context.Context, channelID string) (string, 
 	// 1. from local cache
 	cacheKey := fmt.Sprintf("auth:%s", channelID)
 	token, ok := c.cache.Get(cacheKey)
+
 	if ok {
 		token := token.(IssueTokenResponse)
-		if time.Now().After(token.Expiry) {
+		if time.Now().Before(token.Expiry) {
+			c.logger.Debug("access_token", "from", "cached")
 			return token.AccessToken, nil
 		}
 
 		// 2. refresh token
 		res, err := c.refreshIssueToken(ctx, token.RefreshToken)
 		if err == nil {
+			c.logger.Debug("access_token", "from", "refresh_token")
 			c.cache.Set(cacheKey, *res, refreshTokenExpiry)
 			return res.AccessToken, nil
 		}
@@ -160,6 +166,7 @@ func (c *Client) getAccessToken(ctx context.Context, channelID string) (string, 
 	if err != nil {
 		return "", err
 	}
+	c.logger.Debug("access_token", "from", "issue_token")
 
 	c.cache.Set(cacheKey, *res, refreshTokenExpiry)
 	return res.AccessToken, nil
