@@ -183,7 +183,7 @@ func (u *UseCase) PublishAllFeeds(ctx context.Context) error {
 	for _, f := range feeds {
 		err = u.publishFeed(ctx, &f)
 		if err != nil {
-			return err
+			u.logger.Error("publish failed", "feed_id", f.ID, "error", err)
 		}
 	}
 
